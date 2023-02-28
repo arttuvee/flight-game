@@ -1,5 +1,6 @@
 import mysql.connector
 import story
+import rules
 
 yhteys = mysql.connector.connect(
     host='localhost',
@@ -9,7 +10,13 @@ yhteys = mysql.connector.connect(
     password='sala1',
     autocommit=True)
 
+# Tarvittavat resurssit
+food = 0
+water = 0
+solar = 0
+medicine = 0
 
+p_day = 1
 
 
 # FUNCTIONS:
@@ -86,8 +93,6 @@ resources_found = False
 
 # game id
 
-# game loop
-
 
 #Pelin esittely
 print("Tervetuloa pelaamaan Last Of USA!")
@@ -100,10 +105,21 @@ rules_question = input("Haluatko tutustua pelin sääntöihin ennen pelin aloitt
 if rules_question == "K" or rules_question == "k":
     get_rules()
 
-p_name = input("Syötä nimesi: ")  # TODO Pelaajan nimi täällä
-print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {starting_airport()}")   #TODO sijainti vihje?
+print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
+
+p_name = input("Syötä nimesi: ")                                                                                #Pelaajan nimi täällä
+print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {starting_airport()}\n")   # sijainti vihje?
 
 
 #Pääohjelman Loop alkaa
-#while game_running:
+while p_day < 10:
+    print(f"Päivä numero {p_day} lähtee nyt käyntiin, Sinulla on {10 - p_day} enään päivää aikaa etsiä tarvittavat resurssit ")
+    print("Haluatko käyttää päiväsi tutkimalla:\n 1. Yhden ison lentokentän \n 2. Kaksi keskikokoista lentokenttää?")
+    user_input = input(": ")
 
+    if user_input == "1":
+        print("1") # 1 iso lentokenttä
+    elif user_input == "2":
+        print("2") # 2 medium kenttää
+    elif user_input == "?":
+        print("?") # ? -merkki antaa säännöt ja resurssit
