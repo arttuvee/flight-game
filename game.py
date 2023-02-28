@@ -6,7 +6,7 @@ import random
 yhteys = mysql.connector.connect(
     host='localhost',
     port='3306',
-    database='demogame',
+    database='last_of_usa',
     user='user1',
     password='sala1',
     autocommit=True)
@@ -50,11 +50,17 @@ def starting_airport():
     limit 1;"""
     cursor = yhteys.cursor()
     cursor.execute(sql)
-    result = cursor.fetchone()
+    result = cursor.fetchall()
     for i in result:
-        return i     #TODO emt vähän sus, joku vois visioida
+        return i  #TODO emt vähän sus, joku vois visioida.
+                  #TODO Muokkasin tohon vaan ton fetchone -> fetchall et sain toimii ton create game funktion oikein  -Joona
 
 # create new game
+def create_game(location, screen_name, player_range):
+    sql = " INSERT INTO game (location, screen_name, player_range) VALUES (%s, %s, %s);"
+    cursor = yhteys.cursor(dictionary=True)
+    cursor.execute(sql, (location, screen_name, player_range))
+airport_start = str(starting_airport()[0])
 
     # add goals / loot boxes
 
@@ -108,8 +114,10 @@ if rules_question == "K" or rules_question == "k":
 
 print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
 
-p_name = input("Syötä nimesi: ")                                                                                #Pelaajan nimi täällä
-print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {starting_airport()}\n")   # sijainti vihje?
+p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
+create_game(airport_start, p_name, 0) # Tietokantaan luodaan uusi peli. // Range on viel 0 mut se varmaan sovitaan sit myöhemmin et paljon se on alussa.
+print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {airport_start}\n")   # sijainti vihje?
+
 
 
 #Pääohjelman Loop alkaa
@@ -124,3 +132,5 @@ while p_day < 10:
         print("2") # 2 medium kenttää
     elif user_input == "?":
         print("?") # ? -merkki antaa säännöt ja resurssit
+
+
