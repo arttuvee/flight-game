@@ -56,22 +56,36 @@ def starting_airport():
                   #TODO Muokkasin tohon vaan ton fetchone -> fetchall et sain toimii ton create game funktion oikein  -Joona
 
 # create new game
-def create_game(location, screen_name, player_range):
+def create_game(location, screen_name, player_range, a_ports):
     sql = " INSERT INTO game (location, screen_name, player_range) VALUES (%s, %s, %s);"
     cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql, (location, screen_name, player_range))
-airport_start = str(starting_airport()[0])
+    game_id = cursor.lastrowid
+
 
     # add goals / loot boxes
 
-goals = get_goals()
-goal_list = []
-for goal in goals:
-    for i in range(0, goal["probability"], 1):
-        goal_list.append(goal["id"])
+    goals = get_goals()
+    goal_list = []
+    for goal in goals:
+        for i in range(0, goal["probability"], 1):
+            goal_list.append(goal["id"])
 
 
     # exclude starting airport
+
+    goal_airports = a_ports.copy()
+    random.shuffle(goal_airports)
+
+    for goal_id in goal_list:
+        sql = "INSERT INTO ports (game, airport, goal) VALUES (%s, %s, %s);"
+        cursor = yhteys.cursor(dictionary=True)
+        cursor.execute(sql, (game_id, goal_airports[i]["ident"], goal_id))
+
+    return game_id
+
+airport_start = str(starting_airport()[0])
+                                                           #TODO kaikki resurssit menee samalle kentälle
 
 # get airport info
 
@@ -97,12 +111,14 @@ def get_rules():
 
 # start range in km = ?
 
-
 # boolean for all resources found
 resources_found = False
 
 # all airports
+all_airports = get_airports()
+
 # starting airport ident
+
 # current airport
 
 # game id
@@ -122,7 +138,7 @@ if rules_question == "K" or rules_question == "k":
 print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
 
 p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
-create_game(airport_start, p_name, 0) # Tietokantaan luodaan uusi peli. // Range on viel 0 mut se varmaan sovitaan sit myöhemmin et paljon se on alussa.
+create_game(airport_start, p_name, 0, all_airports) # Tietokantaan luodaan uusi peli. // Range on viel 0 mut se varmaan sovitaan sit myöhemmin et paljon se on alussa.
 print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {airport_start}\n")   # sijainti vihje?
 
 
@@ -137,6 +153,7 @@ while p_day < 10:
         print("1") # 1 iso lentokenttä
     elif user_input == "2":
         print("2") # 2 medium kenttää
+        exit()   #TODO katkasee ikuisen loopin, pitää poistaa myöhemmin
     elif user_input == "?":
         print("?") # ? -merkki antaa säännöt ja resurssit
 

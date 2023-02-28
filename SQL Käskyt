@@ -14,7 +14,7 @@ SET FOREIGN_KEY_CHECKS = 1;
   (
       id           int auto_increment
           primary key,
-      location     varchar(10) null,
+      location     varchar(40) null,
       screen_name  varchar(40) null,
       player_range int         null
   )
