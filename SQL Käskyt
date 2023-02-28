@@ -39,6 +39,7 @@ SET FOREIGN_KEY_CHECKS = 1;
          (5, 'Ryöstäjä', 3);
 
 
+
  create table ports
  (
      id      int auto_increment
