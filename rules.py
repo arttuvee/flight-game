@@ -9,7 +9,6 @@ Lentäminen lentokenttien välillä vähentää jäljellä olevaa toimintamatkaa
 Toimintamatkaa on mahdollista kasvattaa lataamalla konetta isolla lentokentällä. Lataaminen ei vaadi pelaajalta lisätoimenpiteitä, pelkkä vierailu kentällä riittää ja toimintamatka päivittyy automaattisesti päivän loppuessa.\n
 Ryöstön kohteeksi joutuminen johtaa lentokentältä poistumiseen tyhjin käsin.\n
 Resurssien lukumäärä, toimintamatka ja jäljellä oleva aika päivittyy automaattisesti.\n
-Sääntöjen tarkistaminen pelin aikana on mahdollista kirjoittamalla help konsoliin\n
 '''
 
 
