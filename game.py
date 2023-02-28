@@ -64,6 +64,13 @@ airport_start = str(starting_airport()[0])
 
     # add goals / loot boxes
 
+goals = get_goals()
+goal_list = []
+for goal in goals:
+    for i in range(0, goal["probability"], 1):
+        goal_list.append(goal["id"])
+
+
     # exclude starting airport
 
 # get airport info
