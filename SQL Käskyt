@@ -1,0 +1,50 @@
+CREATE DATABASE Last_of_USA;
+USE Last_of_USA;
+
+importtaa ite se koko tiedosto (SOURCE ja sit tiedostosijainti)
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE game;
+DROP TABLE goal;
+DROP TABLE goal_reached;
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+  create table game
+  (
+      id           int auto_increment
+          primary key,
+      location     varchar(10) null,
+      screen_name  varchar(40) null,
+      player_range int         null
+  )
+   charset = latin1;
+
+
+    create table goal
+ (
+     id          int         not null
+         primary key,
+     name        varchar(40) null,
+     probability int         null
+ )
+     charset = latin1;
+
+
+ insert into goal (id, name, probability)
+ values  (1, 'Ruoka', 5),
+         (2, 'Vesi', 5),
+         (3, 'Lääketarvikkeet', 3),
+         (4, 'Aurinkoenergia', 3),
+         (5, 'Ryöstäjä', 3);
+
+
+ create table ports
+ (
+     id      int auto_increment
+         primary key,
+     game    int                  null,
+     airport varchar(11)          not null,
+     goal    int                  null,
+     opened  tinyint(1) default 0 null
+ );

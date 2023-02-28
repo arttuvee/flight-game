@@ -1,6 +1,7 @@
 import mysql.connector
 import story
 import rules
+import random
 
 yhteys = mysql.connector.connect(
     host='localhost',
@@ -23,7 +24,7 @@ p_day = 1
 
 # select all airports for the game
 def get_airports():
-    sql = """ select name, ident, type from airport where ident = "KLAX" or ident = "KJFK" or ident = "KAUS" or ident = "KMSP" or ident = "KSEA"
+    sql = """ select name, ident, type, latitude_deg, longitude_deg from airport where ident = "KLAX" or ident = "KJFK" or ident = "KAUS" or ident = "KMSP" or ident = "KSEA"
             or ident = "KABQ" or ident = "KALN" or ident = "KBIL" or ident = "KBIS" or ident = "KCHO" or ident = "KCSG" or ident = "KGRI"
             or ident = "KLCH" or ident = "KPTK" or ident = "KPVU";"""
     cursor = yhteys.cursor(dictionary=True)
