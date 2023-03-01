@@ -2,6 +2,7 @@ import mysql.connector
 import story
 import rules
 import random
+from geopy.distance import geodesic
 
 yhteys = mysql.connector.connect(
     host='localhost',
@@ -19,7 +20,7 @@ medicine = 0
 resources_found = False
 
 p_day = 1
-p_range = 0 # start range in km = ?
+p_range = 3000 # start range in km = ?
 
 # selects all airports for the game
 def get_airports():
@@ -31,7 +32,7 @@ def get_airports():
     result = cursor.fetchall()
     return result
 
-# get all goals (ruoka, vesi, lääketarvikkeet, aurinkoenergia)
+# get all goals (ruoka, vesi, lääketarvikkeet, aurinkoenergia, ryöstäjä)
 def get_goals():
     sql = "SELECT * from goal;"
     cursor = yhteys.cursor(dictionary=True)
@@ -40,8 +41,8 @@ def get_goals():
     return result
 
 # get starting airport
-def starting_airport():
-    sql = """ select name from airport
+def starting_airport():  # Huom hakee nimen ja identin
+    sql = """ select name, ident from airport
     where iso_country = "US"
     and type = "small_airport"
     and longitude_deg > -125
@@ -67,9 +68,6 @@ def create_game(location, screen_name, player_range, a_ports):
         for i in range(0, goal["probability"], 1):
             goal_list.append(goal["id"])
 
-
-    # exclude starting airport
-
     #Brings all the airports to the started game session
     goal_airports = a_ports.copy()
     random.shuffle(goal_airports)
@@ -79,7 +77,6 @@ def create_game(location, screen_name, player_range, a_ports):
         sql = "INSERT INTO ports (game, airport, goal) VALUES (%s, %s, %s);"
         cursor = yhteys.cursor(dictionary=True)
         cursor.execute(sql, (game_id, airport["ident"], goal_id))
-
     yhteys.commit()
 
     return game_id
@@ -90,12 +87,30 @@ def create_game(location, screen_name, player_range, a_ports):
 
 # check if airport has a goal
 
-# calculate distance between two airports
+# Gets the coordinates from airport using Ident
+def airport_coordinates(ident):
+    sql = "SELECT latitude_deg, longitude_deg FROM airport "
+    sql += "WHERE ident = '" + ident + "'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    result = kursori.fetchall()
+    return result
+
+# Using two airport Idents calculates the distance in-between.
+def distance_calculator(current_ident, destination_ident):
+    distance = geodesic(airport_coordinates(current_ident), airport_coordinates(destination_ident))
+    return distance
 
 # get airports in range
+def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo vaikuttais toimivan mut en keksi järkevää tapaa legit checkata - aleksi
+    in_range = []
+    for a_port in a_ports:
+        distance = distance_calculator(current_ident, a_port['ident'])
+        if distance <= range and not distance == 0:
+            in_range.append(a_port)
+    return in_range
 
 # set loot box opened
-
 # update location
 
 # ask to show the story and rules
@@ -114,10 +129,7 @@ if water == 5 and food == 5 and solar == 1 and medicine == 1: #Päätetään mä
 
 # starting airport ident
 
-# current airport
-
 # game id
-
 
 #Pelin esittely
 """
@@ -133,16 +145,16 @@ if rules_question == "K" or rules_question == "k":
 
 print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
 """
-
 p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
+print(f"Tervetuloa {p_name}!")
 
 all_airports = get_airports()
 airport_start = str(starting_airport()[0])
 current_airport = airport_start
 
+create_game(airport_start, p_name, p_range, all_airports)
 
-create_game(airport_start, p_name, p_range, all_airports) # Tietokantaan luodaan uusi peli. // Range on viel 0 mut se varmaan sovitaan sit myöhemmin et paljon se on alussa.
-print(f"Tervetuloa {p_name}! aloitus lentokenttäsi on {airport_start}\n")   # sijainti vihje?
+#print(f"Olet paikassa: {current_airport[0:]}! Ident koodisi on: _______")  # kesken
 
 """
 #Pääohjelman Loop alkaa
