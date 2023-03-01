@@ -11,8 +11,6 @@ Ryöstön kohteeksi joutuminen johtaa lentokentältä poistumiseen tyhjin käsin
 Resurssien lukumäärä, toimintamatka ja jäljellä oleva aika päivittyy automaattisesti.\n
 '''
 
-
-
 wrapper = textwrap.TextWrapper(width=80, break_long_words=False, replace_whitespace=False)
 word_list = wrapper.wrap(text=rules)
 
