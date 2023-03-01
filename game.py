@@ -55,30 +55,36 @@ def starting_airport():
 
 # create new game
 def create_game(location, screen_name, player_range, a_ports):
-
-    #Brings all the airports to the started game session
-    goal_airports = a_ports.copy()
-    random.shuffle(goal_airports)
-
     #Inserts the values to the new game session
     sql = " INSERT INTO game (location, screen_name, player_range) VALUES (%s, %s, %s);"
     cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql, (location, screen_name, player_range))
     game_id = cursor.lastrowid
 
-    # add goals
     goals = get_goals()
     goal_list = []
     for goal in goals:
         for i in range(0, goal["probability"], 1):
             goal_list.append(goal["id"])
 
-    for i in goal_list:
+
+    # exclude starting airport
+
+    #Brings all the airports to the started game session
+    goal_airports = a_ports.copy()
+    random.shuffle(goal_airports)
+
+    for airport in goal_airports:
+        goal_id = random.choices(goal_list)[0]
         sql = "INSERT INTO ports (game, airport, goal) VALUES (%s, %s, %s);"
         cursor = yhteys.cursor(dictionary=True)
-        cursor.execute(sql, (game_id, goal_airports[i]["ident"], i))
+        cursor.execute(sql, (game_id, airport["ident"], goal_id))
 
-                                                           #TODO kaikki resurssit menee samalle kentälle
+    yhteys.commit()
+
+    return game_id
+
+                                                           #TODO kaikki resurssit menee samalle kentälle.. ei salee mee nyt enää -j
 
 # get airport info
 
@@ -131,7 +137,7 @@ print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pe
 p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
 
 all_airports = get_airports()
-airport_start = (starting_airport()[0])
+airport_start = str(starting_airport()[0])
 current_airport = airport_start
 
 
