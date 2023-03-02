@@ -23,7 +23,7 @@ p_day = 1
 p_range = 1000 # start range in km = ?
 
 # If all the necessary resources are found the boolean is True
-if water == 1 and food == 1 and solar == 1 and medicine == 1: #Päätetään määrät myöhemmin
+if water == 1 and food == 1 and solar == 1 and medicine == 1:
     resources_found = True
 
 # selects all airports for the game
@@ -76,16 +76,11 @@ def create_game(location, screen_name, player_range, a_ports):
     goal_airports = a_ports.copy()
     random.shuffle(goal_airports)
 
-    for airport in goal_airports:
-        goal_id = random.choices(goal_list)[0]
+    for i, goal_id in enumerate(goal_list):
         sql = "INSERT INTO ports (game, airport, goal) VALUES (%s, %s, %s);"
         cursor = yhteys.cursor(dictionary=True)
-        cursor.execute(sql, (game_id, airport["ident"], goal_id))
-    yhteys.commit()
-
+        cursor.execute(sql, (game_id, goal_airports[i]['ident'], goal_id))
     return game_id
-
-                                                           #TODO kaikki resurssit menee samalle kentälle.. ei salee mee nyt enää -j
 
 # get airport info
 def get_airport_info(ident): #TODO TOIMIIKO?
@@ -128,25 +123,24 @@ def airport_visited(ident, game_id):
     return
 
 # check if airport has a goal
-def check_goal(game_id, location): #TODO EI TOIMI
+def check_goal(game_id, location): # vähän sus mut salee ok
     sql = """SELECT ports.id, goal, goal.id as goal_id, name 
     FROM ports 
     JOIN goal ON goal.id = ports.goal 
     WHERE game = %s 
     AND airport = %s """
-    cursor = conn.cursor(dictionary=True)
+    cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql, (game_id, location))
     result = cursor.fetchone()
     if result is None:
         return False
-    return result   #TODO sql komento chekkaus
+    return result
 
 # update location
 def update_location(location,g_id):
     sql = f'''UPDATE game SET location = %s  WHERE id = %s'''
     cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql, (location, g_id))
-
 
 # ask to show the story and rules
 def get_story():
@@ -172,12 +166,7 @@ port_for_create = str(current_port[0])
 
 # game id
 game_id = create_game(current_port,p_name,p_range,all_airports)
-
-#update_location(new_location,gameID_get)
-
-print(airports_in_range(current_ident, all_airports, p_range))
-uusmesta = "testitesteastiet"
-update_location(uusmesta,game_id)
+print(check_goal(game_id, 'KJFK'))
 
 #Pelin esittely
 """
