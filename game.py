@@ -142,6 +142,11 @@ def check_goal(game_id, location): #TODO EI TOIMI
     return result   #TODO sql komento chekkaus
 
 # update location
+def update_location(location,g_id):
+    sql = f'''UPDATE game SET location = %s  WHERE id = %s'''
+    cursor = yhteys.cursor(dictionary=True)
+    cursor.execute(sql, (location, g_id))
+
 
 # ask to show the story and rules
 def get_story():
