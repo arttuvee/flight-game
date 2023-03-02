@@ -20,7 +20,11 @@ medicine = 0
 resources_found = False
 
 p_day = 1
-p_range = 30000 # start range in km = ?
+p_range = 1000 # start range in km = ?
+
+# If all the necessary resources are found the boolean is True
+if water == 1 and food == 1 and solar == 1 and medicine == 1: #Päätetään määrät myöhemmin
+    resources_found = True
 
 # selects all airports for the game
 def get_airports():
@@ -132,14 +136,7 @@ def get_rules():
     for line in rules.getRules():
         print(line)
 # game settings
-
-# If all the necessary resources are found the boolean is True
-if water == 5 and food == 5 and solar == 1 and medicine == 1: #Päätetään määrät myöhemmin
-    resources_found = True
-
-# starting airport ident
-
-# game id
+p_name = input("Syötä nimesi: ")
 
 #Pelin esittely
 """
