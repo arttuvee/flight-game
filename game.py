@@ -20,7 +20,7 @@ medicine = 0
 resources_found = False
 
 p_day = 1
-p_range = 3000 # start range in km = ?
+p_range = 30000 # start range in km = ?
 
 # selects all airports for the game
 def get_airports():
@@ -84,6 +84,14 @@ def create_game(location, screen_name, player_range, a_ports):
                                                            #TODO kaikki resurssit menee samalle kentälle.. ei salee mee nyt enää -j
 
 # get airport info
+def get_airport_info(ident):
+    sql = f'''SELECT iso_country, ident, name, latitude_deg, longitude_deg
+                  FROM airport
+                  WHERE ident = %s'''
+    cursor = yhteys.cursor(dictionary=True)
+    cursor.execute(sql, (ident,))
+    result = cursor.fetchone()
+    return result
 
 # check if airport has a goal
 
@@ -110,7 +118,9 @@ def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo 
             in_range.append(a_port)
     return in_range
 
+
 # set loot box opened
+
 # update location
 
 # ask to show the story and rules
@@ -148,8 +158,10 @@ print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pe
 p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
 print(f"Tervetuloa {p_name}!")
 
+
 all_airports = get_airports()
-airport_start = str(starting_airport()[0])
+airport_start = str(starting_airport()[0]) #Miks tää on str
+
 current_airport = airport_start
 
 create_game(airport_start, p_name, p_range, all_airports)
