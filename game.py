@@ -88,7 +88,7 @@ def create_game(location, screen_name, player_range, a_ports):
                                                            #TODO kaikki resurssit menee samalle kentälle.. ei salee mee nyt enää -j
 
 # get airport info
-def get_airport_info(ident):
+def get_airport_info(ident): #TODO TOIMIIKO?
     sql = f'''SELECT iso_country, ident, name, latitude_deg, longitude_deg
                   FROM airport
                   WHERE ident = %s'''
@@ -97,15 +97,13 @@ def get_airport_info(ident):
     result = cursor.fetchone()
     return result
 
-# check if airport has a goal
-
 # Gets the coordinates from airport using Ident
 def airport_coordinates(ident):
     sql = "SELECT latitude_deg, longitude_deg FROM airport "
     sql += "WHERE ident = '" + ident + "'"
-    kursori = yhteys.cursor()
-    kursori.execute(sql)
-    result = kursori.fetchall()
+    cursor = yhteys.cursor()
+    cursor.execute(sql)
+    result = cursor.fetchall()
     return result
 
 # Using two airport Idents calculates the distance in-between.
@@ -122,8 +120,26 @@ def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo 
             in_range.append(a_port)
     return in_range
 
+# Change that airport has been visited
+def airport_visited(ident, game_id):
+    sql = "UPDATE ports SET opened=true where airport ='" + str(ident) + "' and game =  '" + str(game_id) + "'"
+    cursor = yhteys.cursor()
+    cursor.execute(sql)
+    return
 
-# set loot box opened
+# check if airport has a goal
+def check_goal(game_id, location): #TODO EI TOIMI
+    sql = """SELECT ports.id, goal, goal.id as goal_id, name 
+    FROM ports 
+    JOIN goal ON goal.id = ports.goal 
+    WHERE game = %s 
+    AND airport = %s """
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql, (game_id, location))
+    result = cursor.fetchone()
+    if result is None:
+        return False
+    return result   #TODO sql komento chekkaus
 
 # update location
 
@@ -135,36 +151,44 @@ def get_story():
 def get_rules():
     for line in rules.getRules():
         print(line)
+
 # game settings
 p_name = input("Syötä nimesi: ")
 
+#Get all airports
+all_airports = get_airports()
+airport_start = starting_airport()
+
+# Player locations
+current_ident = airport_start[1]
+current_port = airport_start[0]
+
+port_for_create = str(current_port[0])
+
+# game id
+game_id = create_game(current_port,p_name,p_range,all_airports)
+
+#update_location(new_location,gameID_get)
+
+print(airports_in_range(current_ident, all_airports, p_range))
+uusmesta = "testitesteastiet"
+update_location(uusmesta,game_id)
+
 #Pelin esittely
 """
-print("Tervetuloa pelaamaan Last Of USA!")
+print(f"Tervetuloa pelaamaan Last Of USA {p_name}!")
+print(f"Olet paikassa: {current_port}! Ident koodisi on {current_ident}")
 
-story_question = input("Haluatko tutustua pelin tarinaan ennen pelin aloittamista? K tai E: \n")
+story_question = input("Haluatko tutustua pelin tarinaan ennen pelin aloittamista? (K/E): \n")
 if story_question == "K" or story_question == "k":
     get_story()
 
-rules_question = input("Haluatko tutustua pelin sääntöihin ennen pelin aloittamista? K tai E:\n")
+rules_question = input("Haluatko tutustua pelin sääntöihin ennen pelin aloittamista? (K/E): \n")
 if rules_question == "K" or rules_question == "k":
     get_rules()
 
 print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
 """
-p_name = input("Syötä nimesi: ")   #Pelaajan nimi täällä
-print(f"Tervetuloa {p_name}!")
-
-
-all_airports = get_airports()
-airport_start = str(starting_airport()[0]) #Miks tää on str
-
-current_airport = airport_start
-
-create_game(airport_start, p_name, p_range, all_airports)
-
-#print(f"Olet paikassa: {current_airport[0:]}! Ident koodisi on: _______")  # kesken
-
 """
 #Pääohjelman Loop alkaa
 while p_day < 10:
@@ -173,10 +197,12 @@ while p_day < 10:
     user_input = input(": ")
 
     if user_input == "1":
-        print("1") # 1 iso lentokenttä
+        print(all_airports) # 1 iso lentokenttä
     elif user_input == "2":
         print("2") # 2 medium kenttää
-        exit()   #TODO katkasee ikuisen loopin, pitää poistaa myöhemmin
+
     elif user_input == "?":
         print("?") # ? -merkki antaa säännöt ja resurssit
+    p_day += 1
+    
 """

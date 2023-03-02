@@ -32,11 +32,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 
  insert into goal (id, name, probability)
- values  (1, 'Ruoka', 5),
-         (2, 'Vesi', 5),
-         (3, 'Lääketarvikkeet', 3),
-         (4, 'Aurinkoenergia', 3),
-         (5, 'Ryöstäjä', 3);
+ values  (1, 'Ruoka', 2),
+         (2, 'Vesi', 2),
+         (3, 'Lääketarvikkeet', 2),
+         (4, 'Aurinkoenergia', 2),
+         (5, 'Ryöstäjä', 7)
+
 
 
 
