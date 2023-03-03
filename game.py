@@ -3,6 +3,9 @@ import story
 import rules
 import random
 from geopy import distance
+import sys
+from time import sleep
+import time
 
 yhteys = mysql.connector.connect(
     host='localhost',
@@ -20,7 +23,7 @@ solar = 0
 resources_found = False
 
 p_day = 1
-p_range = 2000 # start range in km = ?
+p_range = 100000 # start range in km = ?
 
 # If all the necessary resources are found the boolean is True
 if water == 1 and food == 1 and solar == 1 and medicine == 1:
@@ -62,8 +65,6 @@ def get_goals():
     cursor.execute(sql)
     result = cursor.fetchall()
     return result
-
-# get starting airport
 
 # create new game
 def create_game(location, screen_name, player_range, a_ports):
@@ -132,7 +133,7 @@ def check_airport_visited(ident, game_id): #TODO EI VALMIS / en osaa
         return False
 
 # check if airport has a goal
-def check_goal(game_id, location): # TODO ei löydä goaleja nimellä esim. : Minneapolis–Saint Paul International Air. identillä löytää
+def check_goal(game_id, location):
     sql = """SELECT ports.id, goal, goal.id as goal_id, name 
     FROM ports 
     JOIN goal ON goal.id = ports.goal 
@@ -160,12 +161,47 @@ def get_rules():
     for line in rules.getRules():
         print(line)
 
+# Prints statements according to found goals or already acquired resources.
+def goal_notifier(ports_goal):
+    global food, water, medicine, solar
+    if ports_goal[0]['name'] == "Ruoka":
+        if food == 0:
+            food += 1
+            return print('Löysit tarvitsemasi ruokatarvikkeet!')
+        else:
+            return print("Löysit lisää ruokatarvikkeita, mutta sinulla on niitä jo tarpeeksi...")
+    elif ports_goal[0]['name'] == "Vesi":
+        if water == 0:
+            water += 1
+            return print('Löysit tarvitsemasi vedenpuhdistuslaitteen!')
+        else:
+            return print("Löysit uuden vedenpuhdistuslaitteen, vaikka nykyinen tilanteesi oli riittävä.")
+    elif ports_goal[0]['name'] == "Lääketarvikkeet":
+        if medicine == 0:
+            medicine += 1
+            return print('Löysit tarvitsemasi lääkintätarvikkeet!')
+        else:
+            return print("Löysit lisää lääkintätarvikkeita, vaikka nykyinen tilanteesi oli riittävä.")
+    elif ports_goal[0]['name'] == "Aurinkoenergia":
+        if solar == 0:
+            solar += 1
+            return print('Löysit tarvitsemasi aurinkokennot!')
+        else:
+            return print("Löysit toisen aurinkokennon, mutta et tarvitse toista...")
+    elif ports_goal[0]['name'] == "Ryöstäjä":
+
+        if random.randint(1,2) == 1:
+            return print("Et löytänyt kentältä mitään ja joudut lähteä tyhjin käsin pois.")
+        else:
+            return print('Kohtasit ryöstäjän matkalla, mutta pääsit karkuun. Et valitettavasti kerennyt löytämään mitään')
+
 # game settings
 p_name = input("Syötä nimesi: ")
 
 #Get all airports
 all_airports = get_airports()
 end_airport = final_airport()
+end_ident = end_airport[0]['ident']
 start_airport = starting_airport() # osa ongelmaa
 
 # Player locations
@@ -193,15 +229,23 @@ print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pe
 """
 
 #Pääohjelman Loop alkaa
-while p_day < 10:
+while p_day < 9:
     # Creates a list with only large airports that have not been visited
-    all_large_ports = [elem for elem in all_airports if elem.get('type') == 'large_airport'] #TODO Pitää keksiä tapa tarkastaa onko airport visited (huom se funktio)?
+    all_large_ports = [elem for elem in all_airports if elem.get('type') == 'large_airport']
+
+    #TODO Pitää keksiä tapa tarkastaa onko airport visited (huom se funktio)?
+
     # Creates a list with only medium airports that have not been visited
     all_medium_ports = [elem for elem in all_airports if elem.get('type') == 'medium_airport']
 
     # Airports in players range
     larges_in_range = airports_in_range(current_ident,all_large_ports,p_range)
     mediums_in_range = airports_in_range(current_ident,all_medium_ports,p_range)
+
+    # If player has no airports in their range they get stuck and fail the game.
+    if len(larges_in_range) == 0 and len(mediums_in_range) == 0:
+        print("Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi.")
+        sys.exit()
 
     print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on {10 - p_day} enään päivää aikaa etsiä tarvittavat resurssit ")
     print(f"Olet tällä hetkellä paikassa: {current_port}\n")
@@ -222,28 +266,23 @@ while p_day < 10:
         # Calculate distance and remove range
         travel = calculate_distance(current_ident,user_input)
         p_range = p_range - travel
+        # Range increases due to charging the plane
+        p_range += 3000
 
         # Update player locations
         current_port = get_airport_info(user_input)['name']
+        print(f"Matkustit kohteeseen: {current_port}")
         current_ident = get_airport_info(user_input)['ident']
         update_location(current_port,game_id)
 
         # Checks the goal in the airport
         port_goal = check_goal(game_id,current_ident)
+        # Notify the player on what they found
+        found_goal = goal_notifier(port_goal)
 
         # Update database on visitation
         change_airport_visited(current_ident,game_id)
-
-        p_range += 3000 # Emt heitin vaan jotain
-
-        print(f"Matkustit kohteeseen: {current_port}")
-        print(f"Latauksen jälkeen koneessasi on toimintamatkaa {p_range:.2f}km jäljellä.\n")
-
-        # TODO Check goal
-        # TODO en tiiä toimiiks tää nyt yhtään sillee kui tän pitäis
-        # TODO kerro pelaajalle löytykö mitään ja rangen lisäys
-        for i in range(120):
-            print("=", end="")
+        print(f"Latasit lentokonetta etsintäsi ajan ja nyt sinulla on {p_range:.2f}km toimintamatkaa jäljellä.\n")
 
     # Player is shown a list of medium airports he can explore
     elif user_input == "2":
@@ -333,9 +372,8 @@ while p_day < 10:
         user_input = input(": ")
         if user_input == "K" or user_input == "k":
             get_rules()
-            for i in range(120):
-                print("=", end="")
-
         p_day -= 1 # So the player doesn't get punished for checking the rules / resources
+    for i in range(120):
+        print("=", end="")
     p_day += 1
 #Pääohjelman loop loppuu
