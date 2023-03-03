@@ -44,13 +44,15 @@ def starting_airport():
 
 # selects all airports for the game
 def get_airports():
-    sql = """ select name, ident, type, latitude_deg, longitude_deg from airport where ident = "KLAX" or ident = "KJFK" or ident = "KAUS" or ident = "KMSP" or ident = "KSEA"
+    sql = """ select name, ident, type, latitude_deg, longitude_deg from airport where ident = "KLAX" or ident = "KJFK" or ident = "KAUS" or ident = "KMKE" or ident = "KSEA"
             or ident = "KABQ" or ident = "KALN" or ident = "KBIL" or ident = "KBIS" or ident = "KCHO" or ident = "KCSG" or ident = "KGRI"
             or ident = "KLCH" or ident = "KPTK" or ident = "KPVU";"""
     cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql)
     result = cursor.fetchall()
     return result
+
+# Selects the final airport where the game ends
 def final_airport():
     sql = "SELECT ident FROM airport WHERE name = 'Key West International Airport'"
     cursor = yhteys.cursor(dictionary=True)
@@ -262,7 +264,7 @@ while p_day < 9:
         print("Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi.")
         sys.exit()
 
-    print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on {10 - p_day} enään päivää aikaa etsiä tarvittavat resurssit ")
+    print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on enään {10 - p_day} päivää aikaa etsiä tarvittavat resurssit ")
     print(f"Olet tällä hetkellä paikassa: {current_port}\n")
     print(f"Haluatko käyttää päiväsi tutkimalla:\n 1. Yhden ison lentokentän (Toimitamatkasi sisällä on: {len(larges_in_range)} kpl isoa lentokenttää) \n 2. Kaksi keskikokoista lentokenttää? (Toimitamatkasi sisällä on: {len(mediums_in_range)} kpl keskikokoista lentokenttää)\n")
 
@@ -392,4 +394,22 @@ while p_day < 9:
     for i in range(120):
         print("=", end="")
     p_day += 1
-#Pääohjelman loop loppuu
+
+# Day number 9 starts now. Last day is spent travelling to the destination - no looting.
+# TODO visuaalinen ilme
+print("\nYhdeksäs päivä lähti nyt käyntiin. Et kerkeä tutkia tänään uusia lentokenttiä. Koko päiväsi kuluu matkustamiseen.\n")
+last_needed_distance = calculate_distance(current_ident,end_ident)
+
+if p_range >= last_needed_distance:
+    print("Lentokoneesi toimintamatka riittää Floridan Key Westiin saakka ja aloitat lentomatkan...\n")
+    sleep(10)# Semmonen loading ..... juttu ois kova
+    if resources_found == True:
+        print("Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi")
+    else:
+        print("Saavut perille ilman tarvittavia resursseja. Olet epäonnistunut tehtävässäsi")
+else:
+    if resources_found == True:
+        print("Vaikka löysit tarvittavat resurssit, ei toimintamatkasi riitä lentämään tapaamispaikkaan saakka. Olet epäonnistunut tehtävässäsi")
+    else:
+        print("Olet liian kaukana tapaamispaikasta etkä ole kerännyt tarvittavia resursseja. Olet epäonnistunut tehtävässäsi")
+
