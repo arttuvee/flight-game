@@ -49,7 +49,7 @@ def get_airports():
     result = cursor.fetchall()
     return result
 def final_airport():
-    sql = "SELECT name, ident FROM airport WHERE name = 'Key West International Airport'"
+    sql = "SELECT ident FROM airport WHERE name = 'Key West International Airport'"
     cursor = yhteys.cursor(dictionary=True)
     cursor.execute(sql)
     result = cursor.fetchall()
@@ -228,6 +228,7 @@ while p_day < 10:
         current_ident = get_airport_info(user_input)['ident']
         update_location(current_port,game_id)
 
+        # Checks the goal in the airport
         port_goal = check_goal(game_id,current_ident)
 
         # Update database on visitation
@@ -246,7 +247,59 @@ while p_day < 10:
 
     # Player is shown a list of medium airports he can explore
     elif user_input == "2":
-        print("2")
+        print("Kopioi lentokentän ICAO-Koodi konsoliin, jonka haluat tutkia.")
+        for port in mediums_in_range:
+            print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
+
+        # Player makes the choise to explore a specific airport
+        user_input = input(": ")
+
+        # Calculate distance and remove range
+        travel = calculate_distance(current_ident, user_input)
+        p_range = p_range - travel
+
+        # Update player locations
+        current_port = get_airport_info(user_input)['name']
+        current_ident = get_airport_info(user_input)['ident']
+        update_location(current_port, game_id)
+
+        print(f"Matkustit kohteeseen: {current_port}")
+        print(f"Lennon jälkeen koneessasi on {p_range:.2f} km toimintamatkaa jäljellä.\n")
+
+        # Checks the goal in the airport
+        port_goal = check_goal(game_id,current_ident)
+        # Notify the player on what they found
+        found_goal = goal_notifier(port_goal)
+
+        # Update visitation on database
+        change_airport_visited(current_ident, game_id)
+
+        # Player chooses second airport to explore
+        print("Kopioi lentokentän ICAO-Koodi konsoliin, jonka haluat tutkia seuraavaksi.")
+        for port in mediums_in_range:
+            print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
+
+        # Player makes the choise to explore a specific airport
+        user_input = input(": ")
+
+        # Calculate distance and remove range
+        travel = calculate_distance(current_ident, user_input)
+        p_range = p_range - travel
+
+        # Update player locations
+        current_port = get_airport_info(user_input)['name']
+        current_ident = get_airport_info(user_input)['ident']
+        update_location(current_port, game_id)
+
+        # Checks the goal in the airport
+        port_goal = check_goal(game_id,current_ident)
+        found_goal = goal_notifier(port_goal)
+
+        # Update visitation on database
+        change_airport_visited(current_ident, game_id)
+
+        print(f"Matkustit kohteeseen: {current_port}")
+        print(f"Lennon jälkeen koneessasi on {p_range:.2f} km toimintamatkaa jäljellä.\n")
 
     # Player chooses to view the rules and resources
     elif user_input == "?":
