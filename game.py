@@ -2,7 +2,7 @@ import mysql.connector
 import story
 import rules
 import random
-from geopy.distance import geodesic
+from geopy import distance
 
 yhteys = mysql.connector.connect(
     host='localhost',
@@ -26,6 +26,19 @@ p_range = 2000 # start range in km = ?
 if water == 1 and food == 1 and solar == 1 and medicine == 1:
     resources_found = True
 
+#Get the starting airport
+def starting_airport():
+    sql = """ select * from airport
+    where iso_country = "US"
+    and type = "small_airport"
+    and longitude_deg > -125
+    order by rand()
+    limit 1;"""
+    cursor = yhteys.cursor(dictionary=True)
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    return result
+
 # selects all airports for the game
 def get_airports():
     sql = """ select name, ident, type, latitude_deg, longitude_deg from airport where ident = "KLAX" or ident = "KJFK" or ident = "KAUS" or ident = "KMSP" or ident = "KSEA"
@@ -42,15 +55,6 @@ def final_airport():
     result = cursor.fetchall()
     return result
 
-#Get Ident for any airport
-# TODO kokeilin ratkasta ident bugia tällä mut en onnistu -aleksi
-def get_ident(port_name):
-    sql = "SELECT ident from airport where name = '" + port_name + "'"
-    cursor = yhteys.cursor(dictionary=True)
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    return result
-
 # get all goals (ruoka, vesi, lääketarvikkeet, aurinkoenergia, ryöstäjä)
 def get_goals():
     sql = "SELECT * from goal;"
@@ -60,17 +64,6 @@ def get_goals():
     return result
 
 # get starting airport
-def starting_airport():  # Huom hakee nimen ja identin
-    sql = """ select name,ident from airport
-    where iso_country = "US"
-    and type = "small_airport"
-    and longitude_deg > -125
-    order by rand()
-    limit 1;"""
-    cursor = yhteys.cursor()
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    return result  #TODO emt vähän sus, joku vois visioida.
 
 # create new game
 def create_game(location, screen_name, player_range, a_ports):
@@ -97,7 +90,7 @@ def create_game(location, screen_name, player_range, a_ports):
     return game_id
 
 # get airport info
-def get_airport_info(ident): #TODO TOIMIIKO?
+def get_airport_info(ident):
     sql = f'''SELECT iso_country, ident, name, latitude_deg, longitude_deg
                   FROM airport
                   WHERE ident = %s'''
@@ -106,25 +99,18 @@ def get_airport_info(ident): #TODO TOIMIIKO?
     result = cursor.fetchone()
     return result
 
-# Gets the coordinates from airport using Ident
-def airport_coordinates(ident):
-    sql = "SELECT latitude_deg, longitude_deg FROM airport "
-    sql += "WHERE ident = '" + ident + "'"
-    cursor = yhteys.cursor()
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    return result
-
 # Using two airport Idents calculates the distance in-between.
-def distance_calculator(current_ident, destination_ident):
-    distance = geodesic(airport_coordinates(current_ident), airport_coordinates(destination_ident))
-    return distance
+def calculate_distance(current, target):
+    start = get_airport_info(current)
+    end = get_airport_info(target)
+    return distance.distance((start['latitude_deg'], start['longitude_deg']),
+                             (end['latitude_deg'], end['longitude_deg'])).km
 
 # get airports in range
 def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo vaikuttais toimivan mut en keksi järkevää tapaa legit checkata - aleksi
     in_range = []
     for a_port in a_ports:
-        distance = distance_calculator(str(current_ident), a_port['ident'])
+        distance = calculate_distance((current_ident), a_port['ident'])
         if distance <= range and not distance == 0:
             in_range.append(a_port)
     return in_range
@@ -180,22 +166,15 @@ p_name = input("Syötä nimesi: ")
 #Get all airports
 all_airports = get_airports()
 end_airport = final_airport()
-start_airport = starting_airport()[0] # osa ongelmaa
+start_airport = starting_airport() # osa ongelmaa
 
 # Player locations
-current_port = start_airport[0]
-current_ident = start_airport[1]
+current_port = start_airport[0]['name']
+current_ident = start_airport[0]['ident']
 
 # game id
 port_for_create = str(current_port[0])
 game_id = create_game(current_port,p_name,p_range,all_airports)
-
-#TODO IDENT käyttävät funktiot ei toimi jostain syystä. Jos syöttää manuaalisesti esim. 'KJFK' funktioon niin toimii
-#mutta jos käyttää esim. airport_coordinates(current_ident) niin ei too mitää muuta ku erroria. Alla olevalla voit testata - syötä kaks eri ident
-
-#test identtejä käytössä kunnes toi ylempi todo on korjattu
-test1 = 'KLAX'
-test2 = 'KJFK'
 
 #Pelin esittely
 """
@@ -221,35 +200,38 @@ while p_day < 10:
     all_medium_ports = [elem for elem in all_airports if elem.get('type') == 'medium_airport']
 
     # Airports in players range
-    larges_in_range = airports_in_range(test2,all_large_ports,p_range) # TODO ei toimi kunnolla IDENT bugin takia
-    mediums_in_range = airports_in_range(test1,all_medium_ports,p_range)
-
-    # How many airports are there in the players range
-    print(f"\nToimitamatkasi sisällä on: {len(larges_in_range)} kpl isoa lentokenttää")
-    print(f"Toimitamatkasi sisällä on: {len(mediums_in_range)} kpl keskikokoista lentokenttää")
+    larges_in_range = airports_in_range(current_ident,all_large_ports,p_range)
+    mediums_in_range = airports_in_range(current_ident,all_medium_ports,p_range)
 
     print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on {10 - p_day} enään päivää aikaa etsiä tarvittavat resurssit ")
     print(f"Olet tällä hetkellä paikassa: {current_port}\n")
-    print("Haluatko käyttää päiväsi tutkimalla:\n 1. Yhden ison lentokentän \n 2. Kaksi keskikokoista lentokenttää?\n")
+    print(f"Haluatko käyttää päiväsi tutkimalla:\n 1. Yhden ison lentokentän (Toimitamatkasi sisällä on: {len(larges_in_range)} kpl isoa lentokenttää) \n 2. Kaksi keskikokoista lentokenttää? (Toimitamatkasi sisällä on: {len(mediums_in_range)} kpl keskikokoista lentokenttää)\n")
 
     # User chooses how to spend the day
     user_input = input(": ")
 
     # Player is shown a list of large airports he can explore
     if user_input == "1":
-        print("Kopioi lentokentän nimi konsoliin, jonka haluat tutkia.")
+
+        print("Kopioi lentokentän ICAO-Koodi konsoliin, jonka haluat tutkia.")
         for port in larges_in_range:
-            print(f"    {port['name']}")
+            print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
             #player makes the choise to explore a specific airport
-            user_input = input(": ")
-            current_port = user_input
-            # TODO get new ident
-            # TODO Check goal
-            # TODO muuta kenttä opened
-            # TODO en tiiä toimiiks tää nyt yhtään sillee kui tän pitäis
-            update_location(current_port,game_id)
-            # TODO kerro pelaajalle löytykö mitään ja rangen lisäys
-            p_range += 3000 # Emt heitin vaan jotain
+        user_input = input(": ")
+        travel = calculate_distance(current_ident,user_input)
+        p_range = p_range - travel
+        current_port = get_airport_info(user_input)['name']
+        current_ident = get_airport_info(user_input)['ident']
+        update_location(current_port,game_id)
+        p_range += 3000 # Emt heitin vaan jotain
+
+        print(f"Matkustit kohteeseen: {current_port}")
+        print(f"Latauksen jälkeen koneessasi on toimintamatkaa {p_range:.2f}km jäljellä.\n")
+
+        # TODO Check goal
+        # TODO muuta kenttä opened
+        # TODO en tiiä toimiiks tää nyt yhtään sillee kui tän pitäis
+        # TODO kerro pelaajalle löytykö mitään ja rangen lisäys
 
     # Player is shown a list of medium airports he can explore
     elif user_input == "2":
@@ -278,7 +260,7 @@ while p_day < 10:
                 else:
                     print("Sinulla on riittävästi lääkintätarvikkeita")
                 if solar == 0:
-                    print("Sinulta puuttuu tarvitsemasi aurinkokennot. Tarvitset sen.")
+                    print("Sinulta puuttuu tarvitsemasi aurinkokennot. Tarvitset ne.")
                 else:
                     print("Sinulla on tarvitsemasi aurinkokenno")
 
