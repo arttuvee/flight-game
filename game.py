@@ -122,7 +122,7 @@ def change_airport_visited(ident, game_id):
     cursor = yhteys.cursor()
     cursor.execute(sql)
     return
-
+'''
 def check_airport_visited(ident, game_id): #TODO EI VALMIS / en osaa
     sql = "SELECT opened FROM ports where airport ='" + ident + "'and game = '" + game_id +"'"
     cursor = yhteys.cursor()
@@ -131,6 +131,21 @@ def check_airport_visited(ident, game_id): #TODO EI VALMIS / en osaa
         return True
     else:
         return False
+'''
+
+def check_airport_visited(ident, game_id):
+    sql = "SELECT opened FROM ports where airport = %s and game = %s"
+    cursor = yhteys.cursor()
+    cursor.execute(sql, (ident, game_id))
+    result = cursor.fetchone()
+    print(result)
+    for result in cursor:
+        if result[0] == '1':
+            return True
+    return False
+
+    
+
 
 # check if airport has a goal
 def check_goal(game_id, location):
@@ -262,6 +277,7 @@ while p_day < 9:
 
         # Player makes the choise to explore a specific airport
         user_input = input(": ")
+        check_airport_visited("KAUS", game_id)
 
         # Calculate distance and remove range
         travel = calculate_distance(current_ident,user_input)
