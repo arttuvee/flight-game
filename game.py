@@ -212,26 +212,37 @@ while p_day < 10:
 
     # Player is shown a list of large airports he can explore
     if user_input == "1":
-
         print("Kopioi lentokentän ICAO-Koodi konsoliin, jonka haluat tutkia.")
         for port in larges_in_range:
             print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
-            #player makes the choise to explore a specific airport
+
+        # Player makes the choise to explore a specific airport
         user_input = input(": ")
+
+        # Calculate distance and remove range
         travel = calculate_distance(current_ident,user_input)
         p_range = p_range - travel
+
+        # Update player locations
         current_port = get_airport_info(user_input)['name']
         current_ident = get_airport_info(user_input)['ident']
         update_location(current_port,game_id)
+
+        port_goal = check_goal(game_id,current_ident)
+
+        # Update database on visitation
+        change_airport_visited(current_ident,game_id)
+
         p_range += 3000 # Emt heitin vaan jotain
 
         print(f"Matkustit kohteeseen: {current_port}")
         print(f"Latauksen jälkeen koneessasi on toimintamatkaa {p_range:.2f}km jäljellä.\n")
 
         # TODO Check goal
-        # TODO muuta kenttä opened
         # TODO en tiiä toimiiks tää nyt yhtään sillee kui tän pitäis
         # TODO kerro pelaajalle löytykö mitään ja rangen lisäys
+        for i in range(120):
+            print("=", end="")
 
     # Player is shown a list of medium airports he can explore
     elif user_input == "2":
@@ -265,10 +276,13 @@ while p_day < 10:
                     print("Sinulla on tarvitsemasi aurinkokenno")
 
         # If player wants to see the rules they are printed for them.
-        print("Haluatko nähdä pelin säännöt? K/E?")
+        print("\nHaluatko nähdä pelin säännöt? K/E?")
         user_input = input(": ")
         if user_input == "K" or user_input == "k":
             get_rules()
+            for i in range(120):
+                print("=", end="")
+
         p_day -= 1 # So the player doesn't get punished for checking the rules / resources
     p_day += 1
 #Pääohjelman loop loppuu
