@@ -10,7 +10,7 @@ import time
 yhteys = mysql.connector.connect(
     host='localhost',
     port='3306',
-    database='last_of_usa',
+    database='last_of_usa1',
     user='user1',
     password='sala1',
     autocommit=True)
@@ -140,11 +140,27 @@ def check_airport_visited(ident, game_id):
     cursor = yhteys.cursor()
     cursor.execute(sql, (ident, game_id))
     result = cursor.fetchone()
-    print(result)
     for result in cursor:
         if result[0] == '1':
             return True
     return False
+
+#removes ability to visit same airport twice
+def get_unvisited_airports(game_id): #TODO Pushasin tän ny mut jos tätä ei haluu käyttää nii voi poistaa.
+    sql = """
+        SELECT airport.name, airport.ident, airport.type, airport.latitude_deg, airport.longitude_deg
+        FROM airport
+        LEFT JOIN ports ON airport.ident = ports.airport AND ports.game = %s
+        WHERE airport.ident IN (
+            'KLAX', 'KJFK', 'KAUS', 'KMSP', 'KSEA',
+            'KABQ', 'KALN', 'KBIL', 'KBIS', 'KCHO', 'KCSG', 'KGRI',
+            'KLCH', 'KPTK', 'KPVU'
+        ) AND (ports.opened IS NULL OR ports.opened = '0')
+    """
+    cursor = yhteys.cursor(dictionary=True)
+    cursor.execute(sql, (game_id,))
+    result = cursor.fetchall()
+    return result
 
     
 
@@ -247,15 +263,17 @@ print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pe
 
 #Pääohjelman Loop alkaa
 while p_day < 9:
+    all_unvisited = get_unvisited_airports(game_id)
     # Creates a list with only large airports that have not been visited
-    all_large_ports = [elem for elem in all_airports if elem.get('type') == 'large_airport']
+    all_large_ports = [elem for elem in all_unvisited if elem.get('type') == 'large_airport']
 
     #TODO Pitää keksiä tapa tarkastaa onko airport visited (huom se funktio)?
 
     # Creates a list with only medium airports that have not been visited
-    all_medium_ports = [elem for elem in all_airports if elem.get('type') == 'medium_airport']
+    all_medium_ports = [elem for elem in all_unvisited if elem.get('type') == 'medium_airport']
 
     # Airports in players range
+
     larges_in_range = airports_in_range(current_ident,all_large_ports,p_range)
     mediums_in_range = airports_in_range(current_ident,all_medium_ports,p_range)
 
@@ -279,8 +297,6 @@ while p_day < 9:
 
         # Player makes the choise to explore a specific airport
         user_input = input(": ")
-        check_airport_visited("KAUS", game_id)
-
         # Calculate distance and remove range
         travel = calculate_distance(current_ident,user_input)
         p_range = p_range - travel
