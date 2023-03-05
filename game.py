@@ -152,7 +152,7 @@ def get_unvisited_airports(game_id): #TODO Pushasin tän ny mut jos tätä ei ha
         FROM airport
         LEFT JOIN ports ON airport.ident = ports.airport AND ports.game = %s
         WHERE airport.ident IN (
-            'KLAX', 'KJFK', 'KAUS', 'KMSP', 'KSEA',
+            'KLAX', 'KJFK', 'KAUS', 'KMKE', 'KSEA',
             'KABQ', 'KALN', 'KBIL', 'KBIS', 'KCHO', 'KCSG', 'KGRI',
             'KLCH', 'KPTK', 'KPVU'
         ) AND (ports.opened IS NULL OR ports.opened = '0')
