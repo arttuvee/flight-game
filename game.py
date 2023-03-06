@@ -10,7 +10,7 @@ import time
 yhteys = mysql.connector.connect(
     host='localhost',
     port='3306',
-    database='last_of_usa',
+    database='last_of_usa1',
     user='user1',
     password='sala1',
     autocommit=True)
@@ -30,7 +30,7 @@ solar = 0
 resources_found = False
 
 p_day = 1
-p_range = 50000 # start range in km = ?
+p_range = 5000 # start range in km = ?
 
 
 #Get the starting airport
@@ -263,8 +263,8 @@ while p_day < 9:
                 print("Aloitat matkasi Floridaan...")
                 sleep(3)
                 print(green + "Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi" + white)
+                input("Paina mitä tahansa sulkeaksesi pelin: ")
                 sys.exit()
-                lopetus = input(" ")
 
     all_unvisited = get_unvisited_airports(game_id)
     # Creates a list with only large airports that have not been visited
@@ -279,8 +279,8 @@ while p_day < 9:
     # If player has no airports in their range they get stuck and fail the game.
     if len(larges_in_range) == 0 and len(mediums_in_range) == 0:
         print(red + "Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi." + white)
+        input("Paina mitä tahansa sulkeaksesi pelin: ")
         sys.exit()
-        lopetus = input(" ")
 
     print("\033[1m" + f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on enään {10 - p_day} päivää aikaa etsiä tarvittavat resurssit "+ "\033[0m")
     print(f"Olet tällä hetkellä paikassa: {current_port}\n")
@@ -429,13 +429,16 @@ if p_range >= last_needed_distance:
     sleep(5)
     if resources_found == True:
         print(green + "Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi" + white)
+
     else:
         print(red + "Saavut perille ilman tarvittavia resursseja. Olet epäonnistunut tehtävässäsi" + white)
 else:
     if resources_found == True:
         print(red + "Vaikka löysit tarvittavat resurssit, ei toimintamatkasi riitä lentämään tapaamispaikkaan saakka. Olet epäonnistunut tehtävässäsi" + white)
+
     else:
         print(red + "Olet liian kaukana tapaamispaikasta etkä ole kerännyt tarvittavia resursseja. Olet epäonnistunut tehtävässäsi" + white)
 
+
 # Gives the player a change to reflect his game / Doesn't exit the program straight away.
-lopetus = input("")
+input("Paina mitä tahansa sulkeaksesi pelin: ")
