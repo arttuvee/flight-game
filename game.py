@@ -1,8 +1,8 @@
 import mysql.connector
 import story
-import rules
 import random
 from geopy import distance
+from geopy.distance import geodesic
 import sys
 from time import sleep
 import time
@@ -30,11 +30,8 @@ solar = 0
 resources_found = False
 
 p_day = 1
-p_range = 100000 # start range in km = ?
+p_range = 50000 # start range in km = ?
 
-# If all the necessary resources are found the boolean is True
-if water == 1 and food == 1 and solar == 1 and medicine == 1:
-    resources_found = True
 
 #Get the starting airport
 def starting_airport():
@@ -117,7 +114,7 @@ def calculate_distance(current, target):
                              (end['latitude_deg'], end['longitude_deg'])).km
 
 # get airports in range
-def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo vaikuttais toimivan mut en keksi järkevää tapaa legit checkata - aleksi
+def airports_in_range(current_ident, a_ports, range):
     in_range = []
     for a_port in a_ports:
         distance = calculate_distance((current_ident), a_port['ident'])
@@ -125,35 +122,16 @@ def airports_in_range(current_ident, a_ports, range):      #Nää kaks funktioo 
             in_range.append(a_port)
     return in_range
 
+
 # Change that airport has been visited
 def change_airport_visited(ident, game_id):
     sql = "UPDATE ports SET opened=true where airport ='" + str(ident) + "' and game =  '" + str(game_id) + "'"
     cursor = yhteys.cursor()
     cursor.execute(sql)
     return
-'''
-def check_airport_visited(ident, game_id): #TODO EI VALMIS / en osaa
-    sql = "SELECT opened FROM ports where airport ='" + ident + "'and game = '" + game_id +"'"
-    cursor = yhteys.cursor()
-    result = cursor.execute(sql)
-    if result == '1':
-        return True
-    else:
-        return False
-'''
-
-def check_airport_visited(ident, game_id):
-    sql = "SELECT opened FROM ports where airport = %s and game = %s"
-    cursor = yhteys.cursor()
-    cursor.execute(sql, (ident, game_id))
-    result = cursor.fetchone()
-    for result in cursor:
-        if result[0] == '1':
-            return True
-    return False
 
 #removes ability to visit same airport twice
-def get_unvisited_airports(game_id): #TODO Pushasin tän ny mut jos tätä ei haluu käyttää nii voi poistaa.
+def get_unvisited_airports(game_id):
     sql = """
         SELECT airport.name, airport.ident, airport.type, airport.latitude_deg, airport.longitude_deg
         FROM airport
@@ -168,9 +146,6 @@ def get_unvisited_airports(game_id): #TODO Pushasin tän ny mut jos tätä ei ha
     cursor.execute(sql, (game_id,))
     result = cursor.fetchall()
     return result
-
-    
-
 
 # check if airport has a goal
 def check_goal(game_id, location):
@@ -198,8 +173,8 @@ def get_story():
             print(line)
 
 def get_rules():
-    for line in rules.getRules():
-        print(line)
+    text = "Tavoite: Kerää tarvittavat resurssit ja tapaa loput ryhmästä aikamääreen puutteessa Floridan Key Westissä \n    -Voit valita yhden ison tai kaksi keskikokoista lentokenttää tutkittavaksi per päivä \n    -Lentäminen lentokenttien välillä vähentää jäljellä olevaa toimintamatkaa. \n    -Toimintamatkaa on mahdollista kasvattaa lataamalla konetta isolla lentokentällä. \n    -Lataaminen ei vaadi pelaajalta lisätoimenpiteitä, pelkkä vierailu kentällä riittää ja toimintamatka päivittyy automaattisesti päivän loppuessa. \n    -Ryöstön kohteeksi joutuminen johtaa lentokentältä poistumiseen tyhjin käsin. \n    -Resurssien lukumäärä, toimintamatka ja jäljellä oleva aika päivittyy automaattisesti. \n    -Voit tarkastella kerättyjen resurssien lukumäärää ja sääntöjä kesken pelin, syöttämällä konsoliin ? -merkin."
+    return print(text)
 
 # Prints statements according to found goals or already acquired resources.
 def goal_notifier(ports_goal):
@@ -229,7 +204,6 @@ def goal_notifier(ports_goal):
         else:
             return print("Löysit toisen aurinkokennon, mutta et tarvitse toista...")
     elif ports_goal[0]['name'] == "Ryöstäjä":
-
         if random.randint(1,2) == 1:
             return print("Et löytänyt kentältä mitään ja joudut lähteä tyhjin käsin pois.")
         else:
@@ -252,10 +226,12 @@ current_ident = start_airport[0]['ident']
 port_for_create = str(current_port[0])
 game_id = create_game(current_port,p_name,p_range,all_airports)
 
-#Pelin esittely
-"""
-print(f"Tervetuloa pelaamaan Last Of USA {p_name}!")
-print(f"Olet paikassa: {current_port}! Ident koodisi on {current_ident}")
+# The player is introduced to the game
+print("+--------------+")
+print("| Last of USA! |")
+print("+--------------+")
+print(f"Tervetuloa pelaamaan {p_name}!")
+print(f"Pelisi alkaa paikasta: {current_port}")
 
 story_question = input("Haluatko tutustua pelin tarinaan ennen pelin aloittamista? (K/E): \n")
 if story_question == "K" or story_question == "k":
@@ -264,23 +240,38 @@ if story_question == "K" or story_question == "k":
 rules_question = input("Haluatko tutustua pelin sääntöihin ennen pelin aloittamista? (K/E): \n")
 if rules_question == "K" or rules_question == "k":
     get_rules()
+else:
+    print("\033[1m" + "Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä joka päivän alussa syöttämällä konsoliin ? -merkin" + "\033[0m")
 
-print('Pääset tarkastelemaan kerättyjä resursseja tai sääntöjä kesken pelin syöttämällä konsoliin " ? " \n')
-"""
+for i in range(120):
+    print("=", end="")
 
-#Pääohjelman Loop alkaa
+#Main program loop begins
 while p_day < 9:
+
+    # Check if the player has found all needed resources
+    if water == 1 and food == 1 and solar == 1 and medicine == 1:
+        resources_found = True
+        print("\033[1m" + "\nOlet löytänyt kaikki tarvittavat resurssit. Voit aloittaa matkan kohti Key Westiä "+ "\033[0m")
+        # The player is given the choice to end the game if they have enough range left
+        last_needed_distance = calculate_distance(current_ident, end_ident)
+        if p_range >= last_needed_distance:
+            print("Sinulla riittää toimintamatka Key Westiin saakka. Haluatko matkustaa sinne nyt? K/E")
+            sus = input(": ")
+            if sus == "K" or sus == "k":
+                print("Aloitat matkasi Floridaan...")
+                sleep(3)
+                print(green + "Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi" + white)
+                sys.exit()
+                lopetus = input(" ")
+
     all_unvisited = get_unvisited_airports(game_id)
     # Creates a list with only large airports that have not been visited
     all_large_ports = [elem for elem in all_unvisited if elem.get('type') == 'large_airport']
-
-    #TODO Pitää keksiä tapa tarkastaa onko airport visited (huom se funktio)?
-
     # Creates a list with only medium airports that have not been visited
     all_medium_ports = [elem for elem in all_unvisited if elem.get('type') == 'medium_airport']
 
     # Airports in players range
-
     larges_in_range = airports_in_range(current_ident,all_large_ports,p_range)
     mediums_in_range = airports_in_range(current_ident,all_medium_ports,p_range)
 
@@ -288,8 +279,9 @@ while p_day < 9:
     if len(larges_in_range) == 0 and len(mediums_in_range) == 0:
         print(red + "Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi." + white)
         sys.exit()
+        lopetus = input(" ")
 
-    print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on enään {10 - p_day} päivää aikaa etsiä tarvittavat resurssit ")
+    print("\033[1m" + f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on enään {10 - p_day} päivää aikaa etsiä tarvittavat resurssit "+ "\033[0m")
     print(f"Olet tällä hetkellä paikassa: {current_port}\n")
     print(f"Haluatko käyttää päiväsi tutkimalla:\n 1. Yhden ison lentokentän (Toimitamatkasi sisällä on: {len(larges_in_range)} kpl isoa lentokenttää) \n 2. Kaksi keskikokoista lentokenttää? (Toimitamatkasi sisällä on: {len(mediums_in_range)} kpl keskikokoista lentokenttää)\n")
 
@@ -419,8 +411,7 @@ while p_day < 9:
     p_day += 1
 
 # Day number 9 starts now. Last day is spent travelling to the destination - no looting.
-# TODO visuaalinen ilme
-print("\nYhdeksäs päivä lähti nyt käyntiin. Et kerkeä tutkia tänään uusia lentokenttiä. Koko päiväsi kuluu matkustamiseen.\n")
+print("\033[1m" + "\nYhdeksäs päivä lähti nyt käyntiin. Et kerkeä tutkia tänään uusia lentokenttiä. Koko päiväsi kuluu matkustamiseen.\n"+ "\033[0m")
 last_needed_distance = calculate_distance(current_ident,end_ident)
 
 if p_range >= last_needed_distance:
