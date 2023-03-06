@@ -177,37 +177,38 @@ def get_rules():
     return print(text)
 
 # Prints statements according to found goals or already acquired resources.
+
 def goal_notifier(ports_goal):
     global food, water, medicine, solar
     if ports_goal[0]['name'] == "Ruoka":
         if food == 0:
             food += 1
-            return print('Löysit tarvitsemasi ruokatarvikkeet!')
+            return print(green + 'Löysit tarvitsemasi ruokatarvikkeet!' + white)
         else:
-            return print("Löysit lisää ruokatarvikkeita, mutta sinulla on niitä jo tarpeeksi...")
+            return print(blue + "Löysit lisää ruokatarvikkeita, mutta sinulla on niitä jo tarpeeksi..." + white)
     elif ports_goal[0]['name'] == "Vesi":
         if water == 0:
             water += 1
-            return print('Löysit tarvitsemasi vedenpuhdistuslaitteen!')
+            return print(green + 'Löysit tarvitsemasi vedenpuhdistuslaitteen!' + white)
         else:
-            return print("Löysit uuden vedenpuhdistuslaitteen, vaikka nykyinen tilanteesi oli riittävä.")
+            return print(yellow + "Löysit toisen vedenpuhdistuslaitteen, mutta sinulla on niitä jo tarpeeksi..." + white)
     elif ports_goal[0]['name'] == "Lääketarvikkeet":
         if medicine == 0:
             medicine += 1
-            return print('Löysit tarvitsemasi lääkintätarvikkeet!')
+            return print(green + 'Löysit tarvitsemasi lääkintätarvikkeet!' + white)
         else:
-            return print("Löysit lisää lääkintätarvikkeita, vaikka nykyinen tilanteesi oli riittävä.")
+            return print(yellow + "Löysit lisää lääkintätarvikkeita, vaikka sinulla on niitä jo tarpeeksi..." + white)
     elif ports_goal[0]['name'] == "Aurinkoenergia":
         if solar == 0:
             solar += 1
-            return print('Löysit tarvitsemasi aurinkokennot!')
+            return print(green + 'Löysit tarvitsemasi aurinkokennot!' + white)
         else:
-            return print("Löysit toisen aurinkokennon, mutta et tarvitse toista...")
+            return print(yellow + "Löysit toisen aurinkokennon, mutta sinulla on niitä jo tarpeeksi..." + white)
     elif ports_goal[0]['name'] == "Ryöstäjä":
         if random.randint(1,2) == 1:
-            return print("Et löytänyt kentältä mitään ja joudut lähteä tyhjin käsin pois.")
+            return print(red + "Et löytänyt kentältä mitään ja joudut lähteä tyhjin käsin pois..." + white)
         else:
-            return print('Kohtasit ryöstäjän matkalla, mutta pääsit karkuun. Et valitettavasti kerennyt löytämään mitään')
+            return print(red + 'Kohtasit ryöstäjän matkalla, mutta pääsit karkuun. Et valitettavasti kerennyt löytämään mitään...' + white)
 
 # game settings
 p_name = input("Syötä nimesi: ")
@@ -300,7 +301,7 @@ while p_day < 9:
             print("Syötä toimiva ICAO-koodi!")
             user_input = input(":").upper()
         # Calculate distance and remove range
-        travel = calculate_distance(current_ident,user_input)
+        travel = calculate_distance(current_ident, user_input)
         p_range = p_range - travel
         # Range increases due to charging the plane
         p_range += 3000
@@ -318,7 +319,7 @@ while p_day < 9:
 
         # Update database on visitation
         change_airport_visited(current_ident,game_id)
-        print(f"Latasit lentokonetta etsintäsi ajan ja nyt sinulla on {p_range:.2f}km toimintamatkaa jäljellä.\n")
+        print(f"Latasit lentokonetta etsintäsi ajan ja nyt sinulla on {blue}{p_range:.2f}km{white} toimintamatkaa jäljellä.\n")
 
     # Player is shown a list of medium airports he can explore
     elif user_input == "2":
@@ -342,7 +343,7 @@ while p_day < 9:
         update_location(current_port, game_id)
 
         print(f"Matkustit kohteeseen: {current_port}")
-        print(f"Lennon jälkeen koneessasi on {p_range:.2f} km toimintamatkaa jäljellä.\n")
+        print(f"Lennon jälkeen koneessasi on {blue}{p_range:.2f}km{white} toimintamatkaa jäljellä.\n")
 
         # Checks the goal in the airport
         port_goal = check_goal(game_id,current_ident)
@@ -380,7 +381,7 @@ while p_day < 9:
         change_airport_visited(current_ident, game_id)
 
         print(f"Matkustit kohteeseen: {current_port}")
-        print(f"Lennon jälkeen koneessasi on {p_range:.2f} km toimintamatkaa jäljellä.\n")
+        print(f"Lennon jälkeen koneessasi on {blue}{p_range:.2f}km{white} toimintamatkaa jäljellä.\n")
 
     # Player chooses to view the rules and resources
     elif user_input == "?":
@@ -390,7 +391,7 @@ while p_day < 9:
         # Player Wants to see resources they have gathered
         if user_input == "K" or user_input == "k":
             if resources_found == True:
-                print("Sinulla on jo kaikki tarvitsemasi!")
+                print(green + "Olet löytänyt jo kaikki resurssit!" + white)
             else:
                 if water == 0:
                     print(red + "Et ole löytänyt vedenpuhdistuslaitetta. Tarvitset sen." + white)
