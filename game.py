@@ -10,10 +10,17 @@ import time
 yhteys = mysql.connector.connect(
     host='localhost',
     port='3306',
-    database='last_of_usa1',
+    database='last_of_usa',
     user='user1',
     password='sala1',
     autocommit=True)
+
+# Color codes
+red = '\33[91m'
+green = '\33[92m'
+white = '\33[0m'
+blue = '\33[94m'
+yellow = '\33[93m'
 
 # Resources that the player needs to manage
 water = 0
@@ -279,7 +286,7 @@ while p_day < 9:
 
     # If player has no airports in their range they get stuck and fail the game.
     if len(larges_in_range) == 0 and len(mediums_in_range) == 0:
-        print("Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi.")
+        print(red + "Lentokoneesi toimintamatka ei riitä seuraavalle lentokentälle. Jäät nykyiseen sijaintiisi jumiin ja epäonnistut tehtävässäsi." + white)
         sys.exit()
 
     print(f"\nPäivä numero {p_day} lähtee nyt käyntiin, Sinulla on enään {10 - p_day} päivää aikaa etsiä tarvittavat resurssit ")
@@ -385,21 +392,21 @@ while p_day < 9:
                 print("Sinulla on jo kaikki tarvitsemasi!")
             else:
                 if water == 0:
-                    print("Et ole löytänyt vedenpuhdistuslaitetta. Tarvitset sen.")
+                    print(red + "Et ole löytänyt vedenpuhdistuslaitetta. Tarvitset sen." + white)
                 else:
-                    print("Sinulla on tarvitsemasi vedenpuhdistuslaite!")
+                    print(green + "Sinulla on tarvitsemasi vedenpuhdistuslaite!" + white)
                 if food == 0:
-                    print("Sinulla ei ole riittävästi ruokaa. Tarvitset lisää.")
+                    print(red + "Sinulla ei ole riittävästi ruokaa. Tarvitset lisää." + white)
                 else:
-                    print("Sinulla on riittävästi ruokaa")
+                    print(green + "Sinulla on riittävästi ruokaa" + white)
                 if medicine == 0:
-                    print("Sinulla ei ole riittävästi lääkintätarvikkeita. Tarvitset lisää.")
+                    print(red + "Sinulla ei ole riittävästi lääkintätarvikkeita. Tarvitset lisää." + white)
                 else:
-                    print("Sinulla on riittävästi lääkintätarvikkeita")
+                    print(green + "Sinulla on riittävästi lääkintätarvikkeita" + white)
                 if solar == 0:
-                    print("Sinulta puuttuu tarvitsemasi aurinkokennot. Tarvitset ne.")
+                    print(red + "Sinulta puuttuu tarvitsemasi aurinkokennot. Tarvitset ne." + white)
                 else:
-                    print("Sinulla on tarvitsemasi aurinkokenno")
+                    print(green + "Sinulla on tarvitsemasi aurinkokenno" + white)
 
         # If player wants to see the rules they are printed for them.
         print("\nHaluatko nähdä pelin säännöt? K/E?")
@@ -417,15 +424,17 @@ print("\nYhdeksäs päivä lähti nyt käyntiin. Et kerkeä tutkia tänään uus
 last_needed_distance = calculate_distance(current_ident,end_ident)
 
 if p_range >= last_needed_distance:
-    print("Lentokoneesi toimintamatka riittää Floridan Key Westiin saakka ja aloitat lentomatkan...\n")
-    sleep(10)# Semmonen loading ..... juttu ois kova
+    print(green + "Lentokoneesi toimintamatka riittää Floridan Key Westiin saakka ja aloitat lentomatkan...\n" + white)
+    sleep(5)
     if resources_found == True:
-        print("Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi")
+        print(green + "Saavut perille tarvittavien resurssien kanssa ja olet onnistunut tehtävässäsi" + white)
     else:
-        print("Saavut perille ilman tarvittavia resursseja. Olet epäonnistunut tehtävässäsi")
+        print(red + "Saavut perille ilman tarvittavia resursseja. Olet epäonnistunut tehtävässäsi" + white)
 else:
     if resources_found == True:
-        print("Vaikka löysit tarvittavat resurssit, ei toimintamatkasi riitä lentämään tapaamispaikkaan saakka. Olet epäonnistunut tehtävässäsi")
+        print(red + "Vaikka löysit tarvittavat resurssit, ei toimintamatkasi riitä lentämään tapaamispaikkaan saakka. Olet epäonnistunut tehtävässäsi" + white)
     else:
-        print("Olet liian kaukana tapaamispaikasta etkä ole kerännyt tarvittavia resursseja. Olet epäonnistunut tehtävässäsi")
+        print(red + "Olet liian kaukana tapaamispaikasta etkä ole kerännyt tarvittavia resursseja. Olet epäonnistunut tehtävässäsi" + white)
 
+# Gives the player a change to reflect his game / Doesn't exit the program straight away.
+lopetus = input("")
