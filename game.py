@@ -295,7 +295,10 @@ while p_day < 9:
             print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
 
         # Player makes the choise to explore a specific airport
-        user_input = input(": ")
+        user_input = input(": ").upper()
+        while user_input not in [port['ident'] for port in larges_in_range]:
+            print("Syötä toimiva ICAO-koodi!")
+            user_input = input(":").upper()
         # Calculate distance and remove range
         travel = calculate_distance(current_ident,user_input)
         p_range = p_range - travel
@@ -324,7 +327,10 @@ while p_day < 9:
             print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
 
         # Player makes the choise to explore a specific airport
-        user_input = input(": ")
+        user_input = input(": ").upper()
+        while user_input not in [port['ident'] for port in mediums_in_range]:
+            print("Syötä toimiva ICAO-koodi!")
+            user_input = input(": ").upper()
 
         # Calculate distance and remove range
         travel = calculate_distance(current_ident, user_input)
@@ -352,7 +358,10 @@ while p_day < 9:
             print(f"    {port['name']}  ICAO-Koodi: {port['ident']}")
 
         # Player makes the choise to explore a specific airport
-        user_input = input(": ")
+        user_input = input(": ").upper()
+        while user_input not in [port['ident'] for port in mediums_in_range]:
+            print("Syötä toimiva ICAO-koodi!")
+            user_input = input(":").upper()
 
         # Calculate distance and remove range
         travel = calculate_distance(current_ident, user_input)
